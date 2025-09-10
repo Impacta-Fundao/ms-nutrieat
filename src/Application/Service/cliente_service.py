@@ -85,3 +85,26 @@ class ClienteService:
             'data_nascimento': data.data_nascimento,
             'idade': calcularIdade(data.data_nascimento)
         }
+    
+    @staticmethod
+    def atualizar_patch_cliente(cliente_id, cliente_data):
+        data = Cliente.query.get(cliente_id)
+        if data is None:
+            raise ClienteException("Cliente não encontrado")
+        
+        if 'nome' in cliente_data:
+            data.nome = cliente_data['nome']
+        if 'cpf' in cliente_data:
+            data.cpf = cliente_data['cpf']
+        if 'data_nascimento' in cliente_data:
+            data.data_nascimento = cliente_data['data_nascimento']
+        
+        db.session.commit()
+        
+        return {
+            'id': data.id,
+            'nome': data.nome,
+            'cpf': data.cpf,
+            'data_nascimento': data.data_nascimento,
+            'idade': calcularIdade(data.data_nascimento)
+        }
