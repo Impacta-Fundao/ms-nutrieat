@@ -3,7 +3,7 @@ from src.Application.Controller.produto_controller import ProdutoController
 
 produto_bp = Blueprint('produto', __name__) 
 
-def init_route(app):
+def init_routeClients(app):
     app.register_blueprint(produto_bp)
     @app.route('/', methods=["GET"])
     def raiz():

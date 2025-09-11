@@ -10,6 +10,8 @@ def create_app(config_class=Config_db,):
     app.config.from_object(config_class)
     db.init_app(app)
 
-    from src.route.produtos.route import init_route
-    init_route(app)
+    from src.route.produtos.route import init_routeClients
+    from src.route.clientes.route import init_routeProduct
+    init_routeProduct(app)
+    init_routeClients(app)
     return app

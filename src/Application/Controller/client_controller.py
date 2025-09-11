@@ -10,7 +10,13 @@ class ClienteController:
             
             nome=data['nome'] if data.get('nome') else None
             cpf=data.get('cpf') if data.get('cpf') else None
-            data_nascimento=data.get('data_nascimento') if data.get('data_nascimento') else None
+            data_nascimento=data.get('data_nascimento') if (data.get('data_nascimento')) else None
+            if int(data_nascimento.split('-')[1]) > 12:
+                return make_response({"message" :"Data inválida"},400)
+            if len(data_nascimento.split('-')[0]) != 4:
+                return make_response({'message':"Formato de data errado. Passe no formato YYYY-MM-DD"}, 400)
+            if int(data_nascimento.split('-')[2]) > 30:
+                return make_response("Data inválida",400)
             
             requiredField.append({"nome": nome, "cpf":cpf, "data_nascimento":data_nascimento})
             for field in requiredField:

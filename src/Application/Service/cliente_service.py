@@ -13,7 +13,7 @@ class ClienteService:
     @staticmethod
     def create_cliente(nome,cpf,data_nascimento):
         new_cliente = ClientDomain(nome,cpf,data_nascimento)
-        cliente = Cliente(nome=new_cliente.nome,cpf=new_cliente.cpf,data_nascimento=new_cliente.data_nascimento)
+        cliente = Cliente(nome=new_cliente.nome,cpf=new_cliente.cpf,data_nascimento=str(new_cliente.data_nascimento))
         db.session.add(cliente)
         db.session.commit()
         return cliente
@@ -25,7 +25,6 @@ class ClienteService:
             'id': cliente.id,
             'nome': cliente.nome,
             'cpf': cliente.cpf,
-            'data_nascimento': cliente.data_nascimento,
             'idade': calcularIdade(cliente.data_nascimento)
         } for cliente in data]
         
@@ -40,7 +39,6 @@ class ClienteService:
             'id': data.id,
             'nome': data.nome,
             'cpf': data.cpf,
-            'data_nascimento': data.data_nascimento,
             'idade': calcularIdade(data.data_nascimento)
         } 
         
@@ -82,7 +80,6 @@ class ClienteService:
             'id': data.id,
             'nome': data.nome,
             'cpf': data.cpf,
-            'data_nascimento': data.data_nascimento,
             'idade': calcularIdade(data.data_nascimento)
         }
     
@@ -105,6 +102,5 @@ class ClienteService:
             'id': data.id,
             'nome': data.nome,
             'cpf': data.cpf,
-            'data_nascimento': data.data_nascimento,
             'idade': calcularIdade(data.data_nascimento)
         }
