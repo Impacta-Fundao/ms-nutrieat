@@ -11,9 +11,9 @@ class ClienteException(Exception):
 class ClienteService:
     
     @staticmethod
-    def create_cliente(nome,cpf,data_nascimento):
-        new_cliente = ClientDomain(nome,cpf,data_nascimento)
-        cliente = Cliente(nome=new_cliente.nome,cpf=new_cliente.cpf,data_nascimento=str(new_cliente.data_nascimento))
+    def create_cliente(nome,cpf,data_nascimento,numero,turno, sala, email):
+        new_cliente = ClientDomain(nome,cpf,data_nascimento,numero,turno,sala,email)
+        cliente = Cliente(nome=new_cliente.nome,cpf=new_cliente.cpf,data_nascimento=str(new_cliente.data_nascimento), numero=new_cliente.numero, sala=new_cliente.sala, turno=new_cliente.turno, email=new_cliente.email)
         db.session.add(cliente)
         db.session.commit()
         return cliente
@@ -25,7 +25,11 @@ class ClienteService:
             'id': cliente.id,
             'nome': cliente.nome,
             'cpf': cliente.cpf,
-            'idade': calcularIdade(cliente.data_nascimento)
+            'idade': calcularIdade(cliente.data_nascimento),
+            'numero' : cliente.numero,
+            'sala' : cliente.sala,
+            'turno' : cliente.turno,
+            'email' : cliente.email
         } for cliente in data]
         
         return cliente_json
@@ -39,7 +43,11 @@ class ClienteService:
             'id': data.id,
             'nome': data.nome,
             'cpf': data.cpf,
-            'idade': calcularIdade(data.data_nascimento)
+            'idade': calcularIdade(data.data_nascimento),
+            'numero' : data.numero,
+            'sala' : data.sala,
+            'turno' : data.turno,
+            'email' : data.email
         } 
         
         return cliente_json
@@ -63,7 +71,11 @@ class ClienteService:
         required_fields = {
             'nome': cliente_data.get('nome'),
             'cpf': cliente_data.get('cpf'),
-            'data_nascimento': cliente_data.get('data_nascimento')
+            'data_nascimento': cliente_data.get('data_nascimento'),
+            'numero' : cliente_data.get('numero'),
+            'sala': cliente_data.get('sala'),
+            'turno': cliente_data.get('turno'),
+            'email' : cliente_data.get('email')
         }
         
         for field, value in required_fields.items():
@@ -73,6 +85,10 @@ class ClienteService:
         data.nome = required_fields['nome']
         data.cpf = required_fields['cpf']
         data.data_nascimento = required_fields['data_nascimento']
+        data.numero = required_fields['numero']
+        data.sala = required_fields['sala']
+        data.turno = required_fields['turno']
+        data.email = required_fields['email']
         
         db.session.commit()
         
@@ -80,7 +96,11 @@ class ClienteService:
             'id': data.id,
             'nome': data.nome,
             'cpf': data.cpf,
-            'idade': calcularIdade(data.data_nascimento)
+            'idade': calcularIdade(data.data_nascimento),
+            'numero' : data.numero,
+            'sala' : data.sala,
+            'turno' : data.turno,
+            'email' : data.email
         }
     
     @staticmethod
@@ -95,6 +115,15 @@ class ClienteService:
             data.cpf = cliente_data['cpf']
         if 'data_nascimento' in cliente_data:
             data.data_nascimento = cliente_data['data_nascimento']
+        if 'numero' in cliente_data:
+            data.numero = cliente_data['numero']
+        if 'sala' in cliente_data:
+            data.sala = cliente_data['sala']
+        if 'turno' in cliente_data:
+            data.turno = cliente_data['turno']
+        if 'email' in cliente_data:
+            data.email = cliente_data['email']
+        
         
         db.session.commit()
         
@@ -102,5 +131,9 @@ class ClienteService:
             'id': data.id,
             'nome': data.nome,
             'cpf': data.cpf,
-            'idade': calcularIdade(data.data_nascimento)
+            'idade': calcularIdade(data.data_nascimento),
+            'numero' : data.numero,
+            'sala' : data.sala,
+            'turno' : data.turno,
+            'email' : data.email
         }
