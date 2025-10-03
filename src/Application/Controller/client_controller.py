@@ -11,6 +11,10 @@ class ClienteController:
             nome=data['nome'] if data.get('nome') else None
             cpf=data.get('cpf') if data.get('cpf') else None
             data_nascimento=data.get('data_nascimento') if (data.get('data_nascimento')) else None
+            numero=data.get('numero') if data.get('numero') else None
+            sala=data.get('sala') if data.get('sala') else None
+            turno=data.get('turno') if data.get('turno') else None
+            email=data.get('email') if data.get('email') else None
             if int(data_nascimento.split('-')[1]) > 12:
                 return make_response({"message" :"Data inválida"},400)
             if len(data_nascimento.split('-')[0]) != 4:
@@ -18,13 +22,13 @@ class ClienteController:
             if int(data_nascimento.split('-')[2]) > 30:
                 return make_response("Data inválida",400)
             
-            requiredField.append({"nome": nome, "cpf":cpf, "data_nascimento":data_nascimento})
+            requiredField.append({"nome": nome, "cpf":cpf, "data_nascimento":data_nascimento, "numero":numero, "sala":sala, "turno":turno, "email": email})
             for field in requiredField:
                 for k,v in field.items():
                     if v is None:
                         return make_response(jsonify({"message": f"Passe um valor para o campo {k}"}), 400)
                     
-            cliente = ClienteService.create_cliente(nome,cpf,data_nascimento).to_dict()
+            cliente = ClienteService.create_cliente(nome,cpf,data_nascimento,numero,turno,sala, email).to_dict()
             return make_response(jsonify({ 
                 "data": cliente,
                 "message": "Criado com sucesso"
@@ -90,7 +94,7 @@ class ClienteController:
             if not data:
                 return make_response(jsonify({"message": "Nenhum dado fornecido para atualização"}), 400)
 
-            cliente = ClienteService.atualizar_cliente(cliente_id, data)
+            cliente = ClienteService.atualizar_patch_cliente(cliente_id, data)
             return make_response(jsonify({ 
                 "data": cliente,
                 "message": "Atualizado com sucesso"
