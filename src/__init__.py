@@ -14,6 +14,8 @@ def create_app(config_class=Config_db,):
 
     from src.route.produtos.route import init_routeClients
     from src.route.clientes.route import init_routeProduct
+    from src.route.vendas.route import init_routeVendas
     init_routeProduct(app)
     init_routeClients(app)
+    init_routeVendas(app)
     return app
