@@ -7,7 +7,7 @@ class ClientController:
     def post_client():
         try:
             request_data = request.get_json()
-            service_data = ClientService.create_cliente(request_data)
+            service_data = ClientService.criar_cliente(request_data)
             return jsonify(data=service_data, message="Cliente cadastrado com sucesso"), 200
         except ClientException as e:
             return jsonify(message=f"Erro ao cadastrar cliente: {str(e)}"), 400
