@@ -1,5 +1,5 @@
 from flask import jsonify, request
-from src.Application.Service.admin_service import AdminService, AdminException
+from src.Application.Service.admin_service import AdminService, AdminException, LoginException
 
 class AdminController:
 
@@ -63,5 +63,16 @@ class AdminController:
             return jsonify(data=service_data, message="Admin atualizado com sucesso"), 200
         except AdminException as e:
             return jsonify(message=f"Erro ao atualizar admin: {str(e)}"), 400
+        except Exception as e:
+            return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500
+
+    @staticmethod
+    def login_admin():
+        try:
+            request_data = request.get_json()
+            service_data = AdminService.login_admin(request_data)
+            return jsonify(user=service_data, message="Logado com sucesso"), 200
+        except LoginException as e:
+            return jsonify(message=f"Erro na tentativa de login: {str(e)}"), 400
         except Exception as e:
             return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500

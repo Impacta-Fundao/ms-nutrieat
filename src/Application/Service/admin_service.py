@@ -8,6 +8,11 @@ class AdminException(Exception):
         super().__init__(msg)
         self.msg = msg
 
+class LoginException(Exception):
+    def __init__(self, msg):
+        super().__init__(msg)
+        self.msg = msg
+
 class AdminService:
 
     @staticmethod
@@ -21,6 +26,7 @@ class AdminService:
         for campo, valor in dados.items():
             if valor is None: continue
             if not isinstance(valor, str): raise AdminException(f"Passe o valor do campo '{campo}' em String")
+            if campo == "senha": valor = bcrypt.hashpw(valor.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             setattr(admin, campo, valor)
 
     @staticmethod
@@ -93,16 +99,16 @@ class AdminService:
         return ReturnAdmin.admins(admin)
 
     @staticmethod
-    def login(admin_data):
-        if not admin_data: raise AdminException("Nenhum dado fornecido")
+    def login_admin(admin_data):
+        if not admin_data: raise LoginException("Nenhum dado fornecido")
         
         for campo in ['cpf', 'senha']:
-            if not admin_data.get(campo): raise AdminException(f"Passe um valor para o campo {campo}")
+            if not admin_data.get(campo): raise LoginException(f"Passe um valor para o campo {campo}")
 
         admin = Admin.query.filter_by(cpf=admin_data['cpf']).first()
-        if not admin: raise AdminException("CPF incorreto")
+        if not admin: raise LoginException("CPF incorreto")
 
         senha = admin.senha
         
-        if bcrypt.checkpw(admin_data['senha'].encode('utf-8'), senha.encode('utf-8')): return admin
-        else: raise AdminException("Senha incorreta")
+        if bcrypt.checkpw(admin_data['senha'].encode('utf-8'), senha.encode('utf-8')): return admin.nome
+        else: raise LoginException("Senha incorreta")
