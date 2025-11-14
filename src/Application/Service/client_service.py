@@ -1,5 +1,6 @@
 from src.Infrastructure.models.cliente import Cliente
 from src.utils.return_service import ReturnClients
+from datetime import datetime, date
 from src import db
 
 class ClientException(Exception):
@@ -10,59 +11,70 @@ class ClientException(Exception):
 class ClientService:
 
     @staticmethod
-    def create_cliente(cliente_data):
+    def _parse_data_nascimento(valor):
+        if isinstance(valor, date): return valor
+        if isinstance(valor, str):
+            try:
+                return datetime.strptime(valor, "%Y-%m-%d").date()
+            except ValueError:
+                raise ClientException("Formato de data inválido. Use YYYY-MM-DD")
+        raise ClientException("Tipo de data inválido")
+
+    @staticmethod
+    def _get_cliente_or_404(cliente_id):
+        cliente = Cliente.query.get(cliente_id)
+        if not cliente: raise ClientException("Cliente não encontrado")
+        return cliente
+
+    @staticmethod
+    def _update_fields(cliente, dados):
+        for campo, valor in dados.items():
+            if valor is None: continue
+            if not isinstance(valor, str): raise ClientException(f"Passe o valor do campo '{campo}' em String")
+            if campo == "data_nascimento":
+                valor = ClientService._parse_data_nascimento(valor)
+
+            setattr(cliente, campo, valor)
+
+    @staticmethod
+    def criar_cliente(cliente_data):
         if not cliente_data: raise ClientException("Nenhum dado fornecido")
-        
-        data_itens = {
-            "nome": cliente_data.get("nome"), 
-            "cpf": cliente_data.get("cpf"), 
-            "data_nascimento": cliente_data.get("data_nascimento"), 
-            "numero": cliente_data.get("numero"), 
-            "sala": cliente_data.get("sala"), 
-            "turno": cliente_data.get("turno"), 
-            "email": cliente_data.get("email")
-            }
 
-        for k, v in data_itens.items():
-            if not v: raise ClientException(f"Passe um valor para o campo '{k}'")
-        
-        if int(data_itens["data_nascimento"].split("-")[1]) > 12: raise ClientException("Data inválida")
-        if len(data_itens["data_nascimento"].split("-")[0]) != 4: raise ClientException("Formato de data errado. Passe no formato YYYY-MM-DD")
-        if int(data_itens["data_nascimento"].split("-")[2]) > 31: raise ClientException("Data inválida")
+        for campo in ["nome", "cpf", "data_nascimento", "numero", "sala", "turno", "email"]:
+            if not cliente_data.get(campo): raise ClientException(f"Passe um valor para o campo '{campo}'")
+            if not isinstance(cliente_data.get(campo), str): raise ClientException(f"Passe o valor do campo '{campo}' em String")
 
-        cliente = Cliente(nome=data_itens["nome"], cpf=data_itens["cpf"], data_nascimento=str(data_itens["data_nascimento"]), 
-                          numero=data_itens["numero"], sala=data_itens["sala"], turno=data_itens["turno"], email=data_itens["email"])
-        
+        data_nasc = ClientService._parse_data_nascimento(cliente_data["data_nascimento"])
+
+        cliente = Cliente(
+            nome=cliente_data["nome"],
+            cpf=cliente_data["cpf"],
+            data_nascimento=data_nasc,
+            numero=cliente_data["numero"],
+            sala=cliente_data["sala"],
+            turno=cliente_data["turno"],
+            email=cliente_data["email"]
+        )
+
         db.session.add(cliente)
         db.session.commit()
 
-        novo_cliente = Cliente.query.order_by(Cliente.id.desc()).first()
-
-        return ReturnClients.clients(novo_cliente)
+        return ReturnClients.clients(cliente)
     
     @staticmethod
     def listar_clientes():
         clientes = Cliente.query.all()
-
         if not clientes: raise ClientException("Não foram encontrados clientes cadastrados")
-        
-        return [ReturnClients.clients(cliente) for cliente in clientes]
+        return [ReturnClients.clients(c) for c in clientes]
 
-    
     @staticmethod
     def get_id(cliente_id):
-        cliente = Cliente.query.get(cliente_id)
-
-        if not cliente: raise ClientException("Cliente não encontrado")
-        
+        cliente = ClientService._get_cliente_or_404(cliente_id)
         return ReturnClients.clients(cliente)
     
     @staticmethod
     def deletar_cliente(cliente_id):
-        cliente = Cliente.query.get(cliente_id)
-
-        if not cliente: raise ClientException("Cliente não encontrado")
-        
+        cliente = ClientService._get_cliente_or_404(cliente_id)
         db.session.delete(cliente)
         db.session.commit()
 
@@ -70,51 +82,26 @@ class ClientService:
     def atualizar_cliente(cliente_id, cliente_data):
         if not cliente_data: raise ClientException("Nenhum dado fornecido")
 
-        cliente = Cliente.query.get(cliente_id)
-        
-        if not cliente: raise ClientException("Cliente não encontrado")
-        
-        data_itens = {
-            "nome": cliente_data.get("nome"),
-            "cpf": cliente_data.get("cpf"),
-            "data_nascimento": cliente_data.get("data_nascimento"),
-            "numero" : cliente_data.get("numero"),
-            "sala": cliente_data.get("sala"),
-            "turno": cliente_data.get("turno"),
-            "email" : cliente_data.get("email")
-        }
-        
-        for k, v in data_itens.items():
-            if not v: raise ClientException(f"O campo '{k}' é obrigatório")
-        
-        cliente.nome = data_itens["nome"]
-        cliente.cpf = data_itens["cpf"]
-        cliente.data_nascimento = data_itens["data_nascimento"]
-        cliente.numero = data_itens["numero"]
-        cliente.sala = data_itens["sala"]
-        cliente.turno = data_itens["turno"]
-        cliente.email = data_itens["email"]
-        
+        cliente = ClientService._get_cliente_or_404(cliente_id)
+
+        for campo in ["nome", "cpf", "data_nascimento", "numero", "sala", "turno", "email"]:
+            if not cliente_data.get(campo): raise ClientException(f"O campo '{campo}' é obrigatório")
+
+        dados = cliente_data.copy()
+        dados["data_nascimento"] = ClientService._parse_data_nascimento(dados["data_nascimento"])
+
+        ClientService._update_fields(cliente, dados)
         db.session.commit()
-        
+
         return ReturnClients.clients(cliente)
     
     @staticmethod
     def atualizar_patch_cliente(cliente_id, cliente_data):
         if not cliente_data: raise ClientException("Nenhum dado fornecido")
 
-        cliente = Cliente.query.get(cliente_id)
-        
-        if not cliente: raise ClientException("Cliente não encontrado")
-        
-        if cliente_data.get("nome"): cliente.nome = cliente_data["nome"]
-        if cliente_data.get("cpf"): cliente.cpf = cliente_data["cpf"]
-        if cliente_data.get("data_nascimento"): cliente.data_nascimento = cliente_data["data_nascimento"]
-        if cliente_data.get("numero"): cliente.numero = cliente_data["numero"]
-        if cliente_data.get("sala"): cliente.sala = cliente_data["sala"]
-        if cliente_data.get("turno"): cliente.turno = cliente_data["turno"]
-        if cliente_data.get("email"): cliente.email = cliente_data["email"]
-        
+        cliente = ClientService._get_cliente_or_404(cliente_id)
+
+        ClientService._update_fields(cliente, cliente_data)
+
         db.session.commit()
-        
         return ReturnClients.clients(cliente)
