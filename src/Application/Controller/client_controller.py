@@ -1,103 +1,67 @@
-from flask import jsonify, request, make_response
-from src.Application.Service.cliente_service import ClienteService,  ClienteException
+from flask import jsonify, request
+from src.Application.Service.client_service import ClientService, ClientException
 
-class ClienteController:
-    @staticmethod
-    def post_cliente():
-        try:
-            data = request.get_json()
-            requiredField = []
-            
-            nome=data['nome'] if data.get('nome') else None
-            cpf=data.get('cpf') if data.get('cpf') else None
-            data_nascimento=data.get('data_nascimento') if (data.get('data_nascimento')) else None
-            numero=data.get('numero') if data.get('numero') else None
-            sala=data.get('sala') if data.get('sala') else None
-            turno=data.get('turno') if data.get('turno') else None
-            email=data.get('email') if data.get('email') else None
-            if int(data_nascimento.split('-')[1]) > 12:
-                return make_response({"message" :"Data inválida"},400)
-            if len(data_nascimento.split('-')[0]) != 4:
-                return make_response({'message':"Formato de data errado. Passe no formato YYYY-MM-DD"}, 400)
-            if int(data_nascimento.split('-')[2]) > 30:
-                return make_response("Data inválida",400)
-            
-            requiredField.append({"nome": nome, "cpf":cpf, "data_nascimento":data_nascimento, "numero":numero, "sala":sala, "turno":turno, "email": email})
-            for field in requiredField:
-                for k,v in field.items():
-                    if v is None:
-                        return make_response(jsonify({"message": f"Passe um valor para o campo {k}"}), 400)
-                    
-            cliente = ClienteService.create_cliente(nome,cpf,data_nascimento,numero,turno,sala, email).to_dict()
-            return make_response(jsonify({ 
-                "data": cliente,
-                "message": "Criado com sucesso"
-                    }), 200)
-        except ClienteException as e:
-            return jsonify({"message": f"Erro na requisição {e.msg}"}, 500)
-        
-    @staticmethod
-    def get_clientes():
-        try:
-            data = ClienteService.listar_clientes()
-            return make_response(jsonify({"data": data}), 200)
-            
-        
-        except ClienteException as e:
-            return make_response(jsonify({"message": f"Erro ao listar clientes: {str(e.msg)}"}), 500)
-        
-    
-    @staticmethod
-    def get_cliente_id(cliente_id):
-        try:
-            data = ClienteService.get_id(cliente_id)
-            if not data:
-                return make_response(jsonify({"message": "Não existe esse cliente cadastrado"}),400 )
-            return make_response(jsonify({"data": data}), 200)
-            
-        except ClienteException as e:
-            return make_response(jsonify({"message": f"Erro ao buscar cliente: {str(e.msg)} | {e}"}), 500)
-        
-    @staticmethod
-    def delete_cliente(cliente_id):
-        try:
-            data = ClienteService.deletar_cliente(cliente_id)
-            if not data:
-                return make_response(jsonify({"message": "Não existe esse cliente cadastrado"}),400 )
-            return make_response(jsonify({"data": data}), 200)
-            
-        except ClienteException as e:
-            return make_response(jsonify({"message": f"Erro ao deletar cliente: {str(e.msg)} | {e}"}), 500)
-        
-    @staticmethod
-    def put_cliente(cliente_id):
-        try:
-            data = request.get_json()
-            
-            if not data:
-                return make_response(jsonify({"message": "Nenhum dado fornecido para atualização"}), 400)
-
-            cliente = ClienteService.atualizar_cliente(cliente_id, data)
-            return make_response(jsonify({ 
-                "data": cliente,
-                "message": "Atualizado com sucesso"
-                    }), 200)
-        except ClienteException as e:
-            return jsonify({"message": f"Erro na requisição {e.msg}"}, 500)
-        
+class ClientController:
 
     @staticmethod
-    def patch_cliente(cliente_id):
+    def post_client():
         try:
-            data = request.get_json()
-            
-            if not data:
-                return make_response(jsonify({"message": "Nenhum dado fornecido para atualização"}), 400)
+            request_data = request.get_json()
+            service_data = ClientService.create_cliente(request_data)
+            return jsonify(data=service_data, message="Cliente cadastrado com sucesso"), 200
+        except ClientException as e:
+            return jsonify(message=f"Erro ao cadastrar cliente: {str(e)}"), 400
+        except Exception as e:
+            return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500
+        
+    @staticmethod
+    def get_client():
+        try:
+            service_data = ClientService.listar_clientes()
+            return jsonify(data=service_data), 200
+        except ClientException as e:
+            return jsonify(message=f"Erro ao pesquisar clientes: {str(e)}"), 400
+        except Exception as e:
+            return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500
+        
+    @staticmethod
+    def get_client_id(client_id):
+        try:
+            service_data = ClientService.get_id(client_id)
+            return jsonify(data=service_data), 200
+        except ClientException as e:
+            return jsonify(message=f"Erro ao pesquisar cliente: {str(e)}"), 400
+        except Exception as e:
+            return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500
+        
+    @staticmethod
+    def delete_client(client_id):
+        try:
+            ClientService.deletar_cliente(client_id)
+            return jsonify(message="Cliente removido com sucesso"), 200
+        except ClientException as e:
+            return jsonify(message=f"Erro ao deletar cliente: {str(e)}"), 400
+        except Exception as e:
+            return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500
+        
+    @staticmethod
+    def put_client(client_id):
+        try:
+            request_data = request.get_json()
+            service_data = ClientService.atualizar_cliente(client_id, request_data)
+            return jsonify(data=service_data, message="Cliente atualizado com sucesso"), 200
+        except ClientException as e:
+            return jsonify(message=f"Erro ao atualizar cliente: {str(e)}"), 400
+        except Exception as e:
+            return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500
 
-            cliente = ClienteService.atualizar_patch_cliente(cliente_id, data)
-            return make_response(jsonify({ 
-                "data": cliente,
-                "message": "Atualizado com sucesso"
-                    }), 200)
-        except ClienteException as e:
-            return jsonify({"message": f"Erro na requisição {e.msg}"}, 500)
+    @staticmethod
+    def patch_client(client_id):
+        try:
+            request_data = request.get_json()
+            service_data = ClientService.atualizar_patch_cliente(client_id, request_data)
+            return jsonify(data=service_data, message="Cliente atualizado com sucesso"), 200
+        except ClientException as e:
+            return jsonify(message=f"Erro ao atualizar cliente: {str(e)}"), 400
+        except Exception as e:
+            return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500
