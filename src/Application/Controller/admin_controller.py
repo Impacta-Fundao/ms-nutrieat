@@ -71,7 +71,7 @@ class AdminController:
         try:
             request_data = request.get_json()
             service_data = AdminService.login_admin(request_data)
-            return jsonify(user=service_data, message="Logado com sucesso"), 200
+            return jsonify(data=service_data, message="Logado com sucesso"), 200
         except LoginException as e:
             return jsonify(message=f"Erro na tentativa de login: {str(e)}"), 400
         except Exception as e:
