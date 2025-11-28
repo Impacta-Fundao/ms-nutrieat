@@ -110,5 +110,5 @@ class AdminService:
 
         senha = admin.senha
         
-        if bcrypt.checkpw(admin_data['senha'].encode('utf-8'), senha.encode('utf-8')): return admin.nome
+        if bcrypt.checkpw(admin_data['senha'].encode('utf-8'), senha.encode('utf-8')): return ReturnAdmin.admins(admin)
         else: raise LoginException("Senha incorreta")
