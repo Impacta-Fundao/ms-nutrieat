@@ -54,3 +54,18 @@ class ReturnAdmin():
             "email": adm.email,
             "celular": adm.celular
         } 
+
+class ReturnVendas():
+    
+    @staticmethod
+    def vendas(venda):
+        return {
+            "id": venda.id,
+            "cliente_id": venda.cliente_id,
+            "data_venda": venda.data_venda.strftime("%Y-%m-%d %H:%M:%S"),
+            "valor_total": float(venda.valor_total) if venda.valor_total is not None else None,
+            "status_pagamento": venda.status_pagamento.value,
+            "forma_pagamento": venda.forma_pagamento.value,
+            "created_at": venda.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "updated_at": venda.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        }
