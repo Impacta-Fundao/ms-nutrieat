@@ -3,6 +3,7 @@ from .client import client_bp
 from .product import product_bp
 from .admin import admin_bp
 from .login_admin import login_admin_bp 
+from .venda import venda_bp
 
 def init_routes(app):
     app.register_blueprint(main_bp)
@@ -10,3 +11,4 @@ def init_routes(app):
     app.register_blueprint(product_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(login_admin_bp)
+    app.register_blueprint(venda_bp)
