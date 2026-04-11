@@ -10,3 +10,7 @@ def get_vendas_all():
 @venda_bp.route('/overview/vendas/<int:year>', methods=['GET'])
 def get_vendas_year(year):
     return VendasController.get_vendas_year(year)
+
+@venda_bp.route('/overview/produtos/<int:year>', methods=['GET'])
+def get_produtos_year(year):
+    return VendasController.get_produtos_year(year)

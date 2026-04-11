@@ -58,3 +58,9 @@ class VendasService:
             "ano": year,
             "meses": dados_meses
         }
+    
+
+    @staticmethod
+    def get_produtos_year(year):
+        return year
+    

@@ -22,3 +22,13 @@ class VendasController:
             return jsonify(message=f"Erro ao pesquisar vendas: {str(e)}"), 400
         except Exception as e:
             return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500
+        
+    @staticmethod
+    def get_produtos_year(year):
+        try:
+            service_data = VendasService.get_produtos_year(year)
+            return jsonify(data=service_data), 200
+        except VendasException as e:
+            return jsonify(message=f"Erro ao pesquisar produtos: {str(e)}"), 400
+        except Exception as e:
+            return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500
