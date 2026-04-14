@@ -2,7 +2,7 @@ from src import db
 from sqlalchemy import Column, Integer, Numeric, DateTime, ForeignKey
 
 class ItensVendas(db.Model):
-    __tablename__ = 'itens_vendas'
+    __tablename__ = 'itens_venda'
     
     id = Column(Integer, primary_key=True)
     venda_id = Column(Integer, ForeignKey('vendas.id'), nullable=False)
