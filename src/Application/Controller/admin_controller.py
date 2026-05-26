@@ -1,7 +1,19 @@
 from flask import jsonify, request
 from src.Application.Service.admin_service import AdminService, AdminException, LoginException
+from src.utils.auth import AuthUtils, AuthTokenException
 
 class AdminController:
+
+    @staticmethod
+    def register_admin():
+        try:
+            request_data = request.get_json()
+            service_data = AdminService.registrar_admin(request_data)
+            return jsonify(data=service_data, message="Admin cadastrado com sucesso"), 201
+        except AdminException as e:
+            return jsonify(message=f"Erro ao cadastrar admin: {str(e)}"), 400
+        except Exception as e:
+            return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500
 
     @staticmethod
     def post_admin():
@@ -74,5 +86,27 @@ class AdminController:
             return jsonify(data=service_data, message="Logado com sucesso"), 200
         except LoginException as e:
             return jsonify(message=f"Erro na tentativa de login: {str(e)}"), 400
+        except Exception as e:
+            return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500
+
+    @staticmethod
+    def refresh_admin():
+        try:
+            request_data = request.get_json() or {}
+            service_data = AdminService.refresh_login(request_data.get("refresh_token"))
+            return jsonify(data=service_data, message="Token renovado com sucesso"), 200
+        except LoginException as e:
+            return jsonify(message=f"Erro ao renovar token: {str(e)}"), 401
+        except Exception as e:
+            return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500
+
+    @staticmethod
+    def me_admin():
+        try:
+            access_token = AuthUtils.extract_bearer_token()
+            service_data = AdminService.get_admin_autenticado(access_token)
+            return jsonify(data=service_data), 200
+        except (LoginException, AuthTokenException) as e:
+            return jsonify(message=f"Erro ao autenticar admin: {str(e)}"), 401
         except Exception as e:
             return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500
