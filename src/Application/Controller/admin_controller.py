@@ -110,3 +110,24 @@ class AdminController:
             return jsonify(message=f"Erro ao autenticar admin: {str(e)}"), 401
         except Exception as e:
             return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500
+
+    @staticmethod
+    def get_admin_account(adm_id):
+        try:
+            service_data = AdminService.get_conta_admin(adm_id)
+            return jsonify(data=service_data), 200
+        except AdminException as e:
+            return jsonify(message=f"Erro ao buscar conta do admin: {str(e)}"), 400
+        except Exception as e:
+            return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500
+
+    @staticmethod
+    def patch_admin_account(adm_id):
+        try:
+            request_data = request.get_json()
+            service_data = AdminService.atualizar_conta_admin(adm_id, request_data)
+            return jsonify(data=service_data, message="Conta do admin atualizada com sucesso"), 200
+        except AdminException as e:
+            return jsonify(message=f"Erro ao atualizar conta do admin: {str(e)}"), 400
+        except Exception as e:
+            return jsonify(message=f"Erro interno do servidor: {str(e)}"), 500

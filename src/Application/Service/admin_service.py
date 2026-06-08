@@ -43,6 +43,12 @@ class AdminService:
             raise AdminException("Já existe um admin cadastrado com esse email")
 
     @staticmethod
+    def _validate_unique_email(email, current_admin_id=None):
+        email_query = Admin.query.filter_by(email=email).first()
+        if email_query and email_query.id != current_admin_id:
+            raise AdminException("Já existe um admin cadastrado com esse email")
+
+    @staticmethod
     def _authenticate_admin(cpf, senha):
         admin = Admin.query.filter_by(cpf=cpf).first()
         if not admin:
@@ -222,5 +228,50 @@ class AdminService:
             admin = AdminService._get_admin_or_404(int(payload["sub"]))
         except (AuthTokenException, ValueError) as exc:
             raise LoginException(str(exc)) from exc
+
+        return ReturnAdmin.admins(admin)
+
+    @staticmethod
+    def get_conta_admin(admin_id):
+        admin = AdminService._get_admin_or_404(admin_id)
+        return ReturnAdmin.admins(admin)
+
+    @staticmethod
+    def atualizar_conta_admin(admin_id, admin_data):
+        if not admin_data:
+            raise AdminException("Nenhum dado fornecido")
+
+        admin = AdminService._get_admin_or_404(admin_id)
+
+        novo_email = admin_data.get("email")
+        nova_senha = admin_data.get("senha")
+
+        if novo_email is None and nova_senha is None:
+            raise AdminException("Informe ao menos um campo: 'email' ou 'senha'")
+
+        if novo_email is not None:
+            if not isinstance(novo_email, str):
+                raise AdminException("Passe o valor do campo 'email' em String")
+
+            novo_email = novo_email.strip().lower()
+            if not novo_email:
+                raise AdminException("Passe um valor para o campo 'email'")
+
+            AdminService._validate_unique_email(novo_email, admin.id)
+            admin.email = novo_email
+
+        if nova_senha is not None:
+            if not isinstance(nova_senha, str):
+                raise AdminException("Passe o valor do campo 'senha' em String")
+
+            if not nova_senha.strip():
+                raise AdminException("Passe um valor para o campo 'senha'")
+
+            admin.senha = bcrypt.hashpw(
+                nova_senha.encode('utf-8'),
+                bcrypt.gensalt(),
+            ).decode('utf-8')
+
+        db.session.commit()
 
         return ReturnAdmin.admins(admin)

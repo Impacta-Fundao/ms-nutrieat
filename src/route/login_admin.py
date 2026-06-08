@@ -18,3 +18,11 @@ def refresh_admin():
 @login_admin_bp.route('/admin/me', methods=['GET'])
 def me_admin():
     return AdminController.me_admin()
+
+@login_admin_bp.route('/admin/account/<int:id>', methods=['GET'])
+def get_admin_account(id):
+    return AdminController.get_admin_account(id)
+
+@login_admin_bp.route('/admin/account/<int:id>', methods=['PATCH'])
+def patch_admin_account(id):
+    return AdminController.patch_admin_account(id)
